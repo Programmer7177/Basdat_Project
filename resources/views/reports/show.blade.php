@@ -1,11 +1,20 @@
 @extends(Auth::user()->role->name == 'admin_sarpras' ? 'layouts.admin' : 'layouts.app')
 
 @section('content')
-    {{-- KARTU DETAIL LAPORAN --}}
+<div class="container">
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h2 class="mb-0">Detail Laporan</h2>
-            <a class="btn btn-secondary" href="{{ (Auth::user()->role->name == 'admin_sarpras') ? route('dashboard') : route('reports.index') }}"> Kembali</a>
+            
+            <div>
+                @if(Auth::user()->role->name == 'admin_sarpras')
+                    <a class="btn btn-primary" href="{{ route('reports.edit', $report->report_id) }}">
+                        Edit Laporan
+                    </a>
+                @endif
+                
+                <a class="btn btn-secondary ms-2" href="{{ (Auth::user()->role->name == 'admin_sarpras') ? route('dashboard') : route('reports.index') }}"> Kembali</a>
+            </div>
         </div>
         <div class="card-body">
             <div class="row">
@@ -39,8 +48,6 @@
                             <strong>Tanggal:</strong>
                             <span>{{ $report->created_at->format('d M Y, H:i') }}</span>
                         </li>
-
-                        {{-- Tampilkan Link Lampiran Jika Ada --}}
                         @if($report->attachment_path)
                             <li class="list-group-item d-flex justify-content-between">
                                 <strong>Lampiran:</strong>
@@ -51,6 +58,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
     {{-- BAGIAN KOMENTAR --}}
     <div class="card shadow-sm">
@@ -58,17 +66,14 @@
             <h4 class="mb-0">Diskusi / Tindak Lanjut</h4>
         </div>
         <div class="card-body">
-            {{-- Daftar Komentar yang Sudah Ada --}}
             @forelse($report->comments as $comment)
                 <div class="d-flex mb-3">
                     <div class="flex-shrink-0 me-3">
-                        {{-- Anda bisa ganti dengan avatar user jika ada --}}
                         <img src="https://via.placeholder.com/50" alt="Avatar" class="rounded-circle">
                     </div>
                     <div class="flex-grow-1 border-bottom pb-2">
                         <h5 class="mt-0 mb-1">
                             {{ $comment->user->username }}
-                            {{-- Tambahkan badge jika yang berkomentar adalah admin --}}
                             @if($comment->user->role->name == 'admin_sarpras')
                                 <span class="badge bg-primary">Admin</span>
                             @endif
@@ -79,11 +84,11 @@
                 </div>
             @empty
                 <p class="text-center text-muted">Belum ada komentar.</p>
-            @endforelse
+            @endforelse {{-- <-- KESALAHAN ADA DI SINI, SEHARUSNYA @endforelse --}}
 
             <hr class="my-4">
 
-            {{-- Form untuk Menambah Komentar Baru --}}
+            {{-- Form Tambah Komentar --}}
             <form action="{{ route('comments.store', $report->report_id) }}" method="POST">
                 @csrf
                 <div class="mb-3">

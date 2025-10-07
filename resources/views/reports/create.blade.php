@@ -35,6 +35,7 @@
 @endpush
 
 @section('content')
+<div class="container">
     <div class="form-container">
         <h2>Pembuatan Laporan</h2>
         
@@ -52,12 +53,19 @@
             </div>
 
             <div class="mb-3">
+                <label for="instansi_type" class="form-label">Tipe Instansi</label>
+                <select class="form-select" id="instansi_type">
+                    <option selected disabled value="">Pilih Tipe Instansi...</option>
+                    <option value="fakultas">Fakultas</option>
+                    <option value="perpustakaan">Perpustakaan</option>
+                    <option value="lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
                 <label for="instansi_id" class="form-label">Instansi</label>
                 <select class="form-select" id="instansi_id" name="instansi_id" required>
-                    <option selected disabled value="">Pilih Instansi Terkait...</option>
-                    @foreach ($instansis as $instansi)
-                        <option value="{{ $instansi->instansi_id }}">{{ $instansi->name }}</option>
-                    @endforeach
+                    <option selected disabled value="">Pilih Tipe Instansi terlebih dahulu</option>
                 </select>
             </div>
 
@@ -84,4 +92,40 @@
             <button type="submit" class="btn btn-primary btn-submit">Kirim Laporan</button>
         </form>
     </div>
+</div>
+
+{{-- JAVASCRIPT UNTUK DEPENDENT DROPDOWN --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const typeSelect = document.getElementById('instansi_type');
+        const instansiSelect = document.getElementById('instansi_id');
+
+        typeSelect.addEventListener('change', function () {
+            const selectedType = this.value;
+            instansiSelect.innerHTML = '<option selected disabled value="">Memuat...</option>';
+
+            if (!selectedType) {
+                instansiSelect.innerHTML = '<option selected disabled value="">Pilih Tipe Instansi terlebih dahulu</option>';
+                return;
+            }
+
+            fetch(`/api/instansi?type=${selectedType}`)
+                .then(response => response.json())
+                .then(data => {
+                    instansiSelect.innerHTML = '<option selected disabled value="">Pilih Instansi Terkait...</option>';
+                    
+                    data.forEach(function (instansi) {
+                        const option = document.createElement('option');
+                        option.value = instansi.instansi_id;
+                        option.textContent = instansi.name;
+                        instansiSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching instansi:', error);
+                    instansiSelect.innerHTML = '<option selected disabled value="">Gagal memuat data</option>';
+                });
+        });
+    });
+</script>
 @endsection

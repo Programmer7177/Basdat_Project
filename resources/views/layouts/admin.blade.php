@@ -26,7 +26,6 @@
                             @if(isset($notifications) && $notifications->count() > 0)
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6em;">
                                     {{ $notifications->count() }}
-                                    <span class="visually-hidden">unread messages</span>
                                 </span>
                             @endif
                         </a>
@@ -36,7 +35,8 @@
                             @if(isset($notifications))
                                 @forelse($notifications as $notification)
                                     <li>
-                                        <a class="dropdown-item" href="{{ $notification->data['url'] }}" style="white-space: normal;">
+                                        {{-- REVISI ADA DI BARIS DI BAWAH INI --}}
+                                        <a class="dropdown-item" href="{{ $notification->data['url'] }}?notify_id={{ $notification->id }}" style="white-space: normal;">
                                             <p class="mb-0 small">{{ $notification->data['message'] }}</p>
                                             <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
                                         </a>
@@ -47,7 +47,7 @@
                             @endif
                         </ul>
                     </div>
-                    {{-- Dropdown untuk User --}}
+                    
                     <div class="dropdown">
                         <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="{{ asset('images/profile-icon.png') }}" alt="mdo" width="32" height="32" class="rounded-circle">
@@ -81,21 +81,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-<style>
-    /* 1. REVISI GRADASI WARNA */
-    body {
-        /* Warna dasar yang netral */
-        background-color: #f8f9fa;
-        /* Dua sumber cahaya radial yang menyebar dengan lembut */
-        background-image: 
-            radial-gradient(circle at top left, rgba(255, 221, 114, 0.2), transparent 100%),
-            radial-gradient(circle at bottom right, rgba(144, 202, 249, 0.3), transparent 100%);
-        background-attachment: fixed;
-    }
-
-    .hero-section {
-        /* ... */
-    }
-    /* ... sisa kode CSS ... */
-</style>

@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\ReportStatusUpdated;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewReportSubmitted;
 
 class FacilityReportController extends Controller
 {
@@ -31,7 +34,7 @@ class FacilityReportController extends Controller
      * Menampilkan form untuk membuat laporan baru. (Create)
      */
     public function create()
-    {
+    {   
         $categories = Category::all();
         $instansis = Instansi::all();
         return view('reports.create', compact('categories', 'instansis'));
@@ -56,7 +59,9 @@ class FacilityReportController extends Controller
             $filePath = $request->file('attachment')->store('attachments', 'public');
         }
 
-        FacilityReport::create([
+        // --- PERBAIKAN DI SINI ---
+        // Simpan hasil pembuatan laporan ke dalam variabel $newReport
+        $newReport = FacilityReport::create([
             'title' => $request->title,
             'category_id' => $request->category_id,
             'instansi_id' => $request->instansi_id,
@@ -66,14 +71,21 @@ class FacilityReportController extends Controller
             'status' => 'pending',
             'attachment_path' => $filePath,
         ]);
-        
-        // Logika redirect yang benar setelah membuat laporan
-        if (Auth::user()->role->name == 'admin_sarpras') {
-            return redirect()->route('dashboard')->with('success', 'Laporan berhasil dibuat!');
-        } else {
-            return redirect()->route('reports.index')->with('success', 'Laporan berhasil dibuat!');
+        // --- AKHIR PERBAIKAN ---
+
+        // Sekarang $newReport sudah ada dan bisa digunakan
+        $admins = User::where('role_id', 2)->get();
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new NewReportSubmitted($newReport));
         }
+    
+    // Logika redirect yang benar setelah membuat laporan
+    if (Auth::user()->role->name == 'admin_sarpras') {
+        return redirect()->route('dashboard')->with('success', 'Laporan berhasil dibuat!');
+    } else {
+        return redirect()->route('reports.index')->with('success', 'Laporan berhasil dibuat!');
     }
+}
 
     /**
      * Menampilkan detail satu laporan. (Read)
@@ -120,6 +132,9 @@ class FacilityReportController extends Controller
                     'user_id' => Auth::id(),
                     'body' => $request->admin_comment,
                 ]);
+    
+                // KIRIM NOTIFIKASI KE USER BAHWA ADMIN MEMBERI KOMENTAR
+                $report->reporter->notify(new \App\Notifications\NewReportComment($report));
             }
         } else {
             $rules = [
